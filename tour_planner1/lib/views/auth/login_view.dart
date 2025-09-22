@@ -55,31 +55,25 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             children: [
               const SizedBox(height: 60),
-              // Title
+              // Logo
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.green[800],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Tour Planner',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Image.asset(
+                  'assets/images/logo.png', // Using one of the available images as logo
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.contain,
                 ),
               ),
 
-              const SizedBox(height: 24),
-
+              // App Title
               Text(
-                'Welcome Back!',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.green[800],
-                      fontWeight: FontWeight.bold,
-                    ),
+                'Tour Planner',
+                style: TextStyle(
+                  color: Colors.green[800],
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 8),

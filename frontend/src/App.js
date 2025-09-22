@@ -27,6 +27,7 @@ import ManageSecurityOptions from "./component/security/ManageSecurityOptions";
 import AddWeatherAlert from "./component/weather/AddWeatherAlert";
 import ManageWeatherAlerts from "./component/weather/ManageWeatherAlerts";
 import EditWeatherAlert from "./component/weather/EditWeatherAlert";
+import ManageUsers from "./component/users/ManageUsers";
 
 function App() {
   return (
@@ -41,6 +42,16 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PrivateRoute>
+                <Layout title="Manage Users">
+                  <ManageUsers />
+                </Layout>
               </PrivateRoute>
             }
           />

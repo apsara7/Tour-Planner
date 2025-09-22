@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/models/vehicle_model.dart';
 import '../../core/services/api_service.dart';
 import 'vehicle_detail_view.dart';
@@ -245,7 +246,7 @@ class _VehiclesListViewState extends State<VehiclesListView> {
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/plan-trip'),
         ),
         actions: [
           IconButton(

@@ -40,7 +40,7 @@ const ManageUsers = () => {
       }
 
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/api/admin/users`,
+        `${process.env.REACT_APP_BASE_URL}/api/usersData`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

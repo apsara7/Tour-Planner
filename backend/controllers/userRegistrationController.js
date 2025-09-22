@@ -128,7 +128,20 @@ const registerUser = async (req, res) => {
     await sendEmail(
       email,
       "Welcome to Tour Planner!",
-      `<p>Hi ${firstName}, your account was created successfully.</p>`
+      `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
+    <h2 style="color: #2c3e50;">Welcome to Tour Planner, ${firstName}!</h2>
+    <p style="font-size: 16px; color: #333;">
+      Your account has been successfully created. Now you can log in to the mobile app and start exploring amazing tours and experiences.
+    </p>
+    <a href="http://localhost:8080/#/login" style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+      Login Now
+    </a>
+    <p style="margin-top: 20px; font-size: 14px; color: #777;">
+      Thank you for joining Tour Planner!
+    </p>
+  </div>
+  `
     );
 
     // Return success response (exclude password from response)

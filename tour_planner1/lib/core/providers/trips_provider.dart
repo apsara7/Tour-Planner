@@ -6,6 +6,7 @@ import '../models/trip_model.dart';
 import '../models/place_model.dart';
 import '../models/guide_model.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 
 class TripsProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -43,21 +44,49 @@ class TripsProvider with ChangeNotifier {
       return _currentUserId!;
     }
 
-    // Try to get user ID from UserProvider if context is available
+    // Try to get user ID from AuthProvider if context is available
     if (_context != null) {
       try {
         // Check if the context is still active before using it
         if (_context!.mounted) {
-          final userProvider =
-              Provider.of<UserProvider>(_context!, listen: false);
-          final userData = userProvider.userData;
-          if (userData != null) {
-            final userId = userData['id'] ?? userData['_id'];
-            if (userId != null && userId.toString().isNotEmpty) {
-              if (kDebugMode) {
-                print('currentUserId: Using UserProvider userId: $userId');
+          // Try AuthProvider first
+          try {
+            final authProvider =
+                Provider.of<AuthProvider>(_context!, listen: false);
+            if (authProvider.user != null) {
+              final userId = authProvider.user!.id;
+              if (userId != null && userId.toString().isNotEmpty) {
+                if (kDebugMode) {
+                  print('currentUserId: Using AuthProvider userId: $userId');
+                }
+                return userId.toString();
               }
-              return userId.toString();
+            }
+          } catch (authError) {
+            if (kDebugMode) {
+              print(
+                  'currentUserId: AuthProvider not available or no user: $authError');
+            }
+          }
+
+          // Fallback to UserProvider
+          try {
+            final userProvider =
+                Provider.of<UserProvider>(_context!, listen: false);
+            final userData = userProvider.userData;
+            if (userData != null) {
+              final userId = userData['id'] ?? userData['_id'];
+              if (userId != null && userId.toString().isNotEmpty) {
+                if (kDebugMode) {
+                  print('currentUserId: Using UserProvider userId: $userId');
+                }
+                return userId.toString();
+              }
+            }
+          } catch (userError) {
+            if (kDebugMode) {
+              print(
+                  'currentUserId: UserProvider not available or no user data: $userError');
             }
           }
         } else {
@@ -67,9 +96,8 @@ class TripsProvider with ChangeNotifier {
         }
       } catch (e) {
         if (kDebugMode) {
-          print('currentUserId: Error getting user ID from UserProvider: $e');
+          print('currentUserId: Error getting user ID from providers: $e');
         }
-        // If we can't get user ID from UserProvider, continue to throw exception
       }
     }
 
@@ -83,7 +111,7 @@ class TripsProvider with ChangeNotifier {
     }
 
     throw Exception(
-        'User ID not set. Please call setUserId() with a valid user ID or ensure UserProvider has user data.');
+        'User ID not set. Please call setUserId() with a valid user ID or ensure AuthProvider/UserProvider has user data.');
   }
 
   // Get or create default trip
@@ -1091,5 +1119,46 @@ class TripsProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Confirm trip and send notifications
+  Future<bool> confirmTrip(String tripId) async {
+    try {
+      _error = null;
+
+      // Set the user ID explicitly to avoid context issues
+      final userId = currentUserId;
+
+      final response = await _apiService.confirmTrip(tripId, userId);
+
+      if (response['status'] == 'Success') {
+        // Update the trip in our local state
+        final updatedTrip = Trip.fromJson(response['trip']);
+        final tripIndex = _trips.indexWhere((t) => t.id == tripId);
+        if (tripIndex >= 0) {
+          _trips[tripIndex] = updatedTrip;
+        }
+
+        if (_currentTrip?.id == tripId) {
+          _currentTrip = updatedTrip;
+        }
+
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      // Extract just the error message without the "Exception:" prefix
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage =
+            errorMessage.substring(11); // Remove "Exception: " prefix
+      }
+      _error = 'Failed to confirm trip: $errorMessage';
+      if (kDebugMode) {
+        print('Error confirming trip: $e');
+      }
+      notifyListeners();
+    }
+    return false;
   }
 }

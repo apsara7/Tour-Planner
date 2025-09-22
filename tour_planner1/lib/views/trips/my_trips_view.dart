@@ -7,6 +7,10 @@ import '../../core/models/guide_model.dart';
 import '../../core/models/trip_model.dart';
 import '../../core/models/vehicle_model.dart';
 import '../../core/services/api_service.dart';
+import '../places/places_list_view.dart';
+import '../guides/guides_list_view.dart';
+import '../hotels/hotels_list_view.dart';
+import '../vehicles/vehicles_list_view.dart';
 
 class MyTripsView extends StatefulWidget {
   const MyTripsView({super.key});
@@ -510,6 +514,36 @@ class _MyTripsViewState extends State<MyTripsView> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  // Confirm Trip button
+                  if (currentTrip != null &&
+                      (tripPlaces?.isNotEmpty == true ||
+                          tripGuides?.isNotEmpty == true ||
+                          tripHotels?.isNotEmpty == true ||
+                          tripVehicles?.isNotEmpty == true))
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            _confirmTrip(currentTrip, tripsProvider),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 3,
+                        ),
+                        child: const Text(
+                          'Confirm Trip',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -863,6 +897,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
   Future<void> _removePlaceFromTrip(
       Place place, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -902,6 +939,9 @@ class _MyTripsViewState extends State<MyTripsView> {
   }
 
   Future<void> _showDatePicker(Trip trip, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     DateTime? startDate = trip.startDate;
     DateTime? endDate = trip.endDate;
 
@@ -976,6 +1016,8 @@ class _MyTripsViewState extends State<MyTripsView> {
     );
 
     if (result != null && trip.id != null) {
+      // Set the context for user ID retrieval before calling updateTripDates
+      tripsProvider.setContext(context);
       final success = await tripsProvider.updateTripDates(
         trip.id!,
         startDate: result['startDate'],
@@ -1297,6 +1339,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
   Future<void> _showTravellersCountPicker(
       Trip trip, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     int selectedCount = trip.travellersCount;
 
     final result = await showDialog<int>(
@@ -1377,6 +1422,8 @@ class _MyTripsViewState extends State<MyTripsView> {
     );
 
     if (result != null && result != trip.travellersCount && trip.id != null) {
+      // Set the context for user ID retrieval before calling updateTripDetails
+      tripsProvider.setContext(context);
       final success = await tripsProvider.updateTripDetails(
         trip.id!,
         travellersCount: result,
@@ -1459,6 +1506,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
     if (result != null && trip.id != null) {
       final tripsProvider = Provider.of<TripsProvider>(context, listen: false);
+      // Set the context for user ID retrieval
+      tripsProvider.setContext(context);
+
       final success = await tripsProvider.updateTripDetails(
         trip.id!,
         otherExpenses: result,
@@ -1629,6 +1679,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
   Future<void> _removeGuideFromTrip(
       Guide guide, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1818,6 +1871,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
   Future<void> _removeHotelFromTrip(
       String hotelId, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1987,6 +2043,9 @@ class _MyTripsViewState extends State<MyTripsView> {
 
   Future<void> _removeVehicleFromTrip(
       String vehicleId, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -2087,7 +2146,12 @@ class _MyTripsViewState extends State<MyTripsView> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  context.go('/places');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PlacesListView(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -2113,7 +2177,12 @@ class _MyTripsViewState extends State<MyTripsView> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  context.go('/guides');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GuidesListView(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -2139,7 +2208,12 @@ class _MyTripsViewState extends State<MyTripsView> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  context.go('/hotels');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HotelsListView(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -2165,7 +2239,12 @@ class _MyTripsViewState extends State<MyTripsView> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  context.go('/vehicles');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const VehiclesListView(),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 20),
@@ -2174,5 +2253,134 @@ class _MyTripsViewState extends State<MyTripsView> {
         );
       },
     );
+  }
+
+  Future<void> _confirmTrip(Trip trip, TripsProvider tripsProvider) async {
+    // Set the context for user ID retrieval
+    tripsProvider.setContext(context);
+
+    // Check if there are any items in the trip
+    final hasPlaces = tripPlaces?.isNotEmpty == true;
+    final hasGuides = tripGuides?.isNotEmpty == true;
+    final hasHotels = tripHotels?.isNotEmpty == true;
+    final hasVehicles = tripVehicles?.isNotEmpty == true;
+
+    if (!hasPlaces && !hasGuides && !hasHotels && !hasVehicles) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Please add at least one item to your trip before confirming'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Trip'),
+        content: const Text(
+            'Do you want to confirm this trip? Once confirmed, the hotels, guides, and vehicle owners will be notified.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && trip.id != null) {
+      // Show loading indicator
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Colors.green),
+                SizedBox(height: 20),
+                Text('Confirming your trip...'),
+              ],
+            ),
+          ),
+        );
+      }
+
+      try {
+        // Call the confirm trip method
+        final success = await tripsProvider.confirmTrip(trip.id!);
+
+        // Close loading dialog
+        if (mounted) {
+          Navigator.pop(context);
+        }
+
+        if (success) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Trip confirmed successfully! The hotels, guides, and vehicle owners will contact you soon.'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+            );
+          }
+
+          // Refresh trip data to update status
+          await _refreshAllTripData();
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(tripsProvider.error ?? 'Failed to confirm trip'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) {
+          Navigator.pop(context);
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error confirming trip: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+            ),
+          );
+        }
+      }
+    }
   }
 }

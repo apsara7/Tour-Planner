@@ -153,7 +153,7 @@ class _PlaceDetailViewState extends State<PlaceDetailView> {
       foregroundColor: Colors.white,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => context.go('/places'),
       ),
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
@@ -553,6 +553,13 @@ class _PlaceDetailViewState extends State<PlaceDetailView> {
   Widget _buildAddToTripButton() {
     return Consumer<TripsProvider>(
       builder: (context, tripsProvider, child) {
+        tripsProvider
+            .setContext(context); // Set the context for user ID retrieval
+        // Ensure we have the current trip loaded
+        if (tripsProvider.currentTrip == null) {
+          tripsProvider.getOrCreateDefaultTrip();
+        }
+
         final isInTrip = tripsProvider.isPlaceInTrip(widget.placeId);
         final hasAddedToTrip = tripsProvider.hasAddedPlaceToTrip;
 
@@ -641,6 +648,8 @@ class _PlaceDetailViewState extends State<PlaceDetailView> {
           );
         }
       } else {
+        // Ensure we have a trip before adding
+        await tripsProvider.getOrCreateDefaultTrip();
         success = await tripsProvider.addPlaceToTrip(widget.placeId);
         if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -44,5 +44,6 @@ class ApiConstants {
   static const String addVehicleToTrip = '/api/trips/add-vehicle';
   static const String removeVehicleFromTrip = '/api/trips/remove-vehicle';
   static const String updateVehicleInTrip = '/api/trips/update-vehicle';
+  static const String confirmTrip = '/api/trips/confirm';
   static const String defaultTrip = '/api/user';
 }

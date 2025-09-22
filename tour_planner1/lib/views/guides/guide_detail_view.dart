@@ -815,19 +815,25 @@ class _GuideDetailViewState extends State<GuideDetailView> {
                         border: Border.all(color: Colors.green[200]!),
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Daily Amount:',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text(
-                                'LKR ${dailyCost.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[700],
+                              const Flexible(
+                                child: Text('Daily Amount:',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  'LKR ${dailyCost.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[700],
+                                  ),
+                                  textAlign: TextAlign.end,
                                 ),
                               ),
                             ],
@@ -838,15 +844,20 @@ class _GuideDetailViewState extends State<GuideDetailView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Trip Cost ($tripDays days):',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              Text(
-                                'LKR ${totalTripCost.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[800],
+                              Flexible(
+                                child: Text('Total Trip Cost ($tripDays days):',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  'LKR ${totalTripCost.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[800],
+                                  ),
+                                  textAlign: TextAlign.end,
                                 ),
                               ),
                             ],

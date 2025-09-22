@@ -118,20 +118,20 @@ export default function Sidebar() {
       ],
       onClick: () => navigate("/security-options"),
     },
-    {
-      key: "reports",
-      label: "Reports",
-      icon: BarChart3,
-      paths: ["/reports"],
-      onClick: () => navigate("/reports"),
-    },
-    {
-      key: "settings",
-      label: "Settings",
-      icon: Settings,
-      paths: ["/settings"],
-      onClick: () => navigate("/settings"),
-    },
+    // {
+    //   key: "reports",
+    //   label: "Reports",
+    //   icon: BarChart3,
+    //   paths: ["/reports"],
+    //   onClick: () => navigate("/reports"),
+    // },
+    // {
+    //   key: "settings",
+    //   label: "Settings",
+    //   icon: Settings,
+    //   paths: ["/settings"],
+    //   onClick: () => navigate("/settings"),
+    // },
   ];
 
   const filteredItems = menuItems.filter(

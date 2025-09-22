@@ -96,29 +96,18 @@ class _RegisterViewState extends State<RegisterView> {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              // Header
+              // Logo
               Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green[800],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.person_add,
-                  size: 48,
-                  color: Colors.white,
+                padding: const EdgeInsets.all(20),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.contain,
                 ),
               ),
 
               const SizedBox(height: 24),
-
-              Text(
-                'Join Our Community',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.green[800],
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
 
               const SizedBox(height: 8),
 

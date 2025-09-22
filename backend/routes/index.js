@@ -85,7 +85,14 @@ const {
   addVehicleToTrip,
   removeVehicleFromTrip,
   updateVehicleInTrip,
+  confirmTrip,
 } = require("../controllers/tripsController");
+
+const {
+  getAllUsersWithTrips,
+  getUserWithTrips,
+  deleteUser,
+} = require("../controllers/usersController");
 
 const { authenticateToken } = require("../middleware/authMiddleware");
 const storage = multer.diskStorage({
@@ -192,8 +199,14 @@ router.put("/trips/update-hotel", updateHotelInTrip);
 router.post("/trips/add-vehicle", addVehicleToTrip);
 router.post("/trips/remove-vehicle", removeVehicleFromTrip);
 router.put("/trips/update-vehicle", updateVehicleInTrip);
+router.post("/trips/confirm", confirmTrip);
 router.put("/trips/:id", updateTrip);
 router.delete("/trips/:id", deleteTrip);
 router.get("/user/:userId/default-trip", getOrCreateDefaultTrip);
+
+// users data
+router.get("/usersData", authenticateToken, getAllUsersWithTrips);
+router.get("/usersData/:userId", authenticateToken, getUserWithTrips);
+router.delete("/usersData/:userId", authenticateToken, deleteUser);
 
 module.exports = router;

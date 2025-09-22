@@ -88,7 +88,7 @@ class _PlacesListViewState extends State<PlacesListView> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.go('/plan-trip'),
         ),
       ),
       body: Column(

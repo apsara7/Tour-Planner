@@ -311,7 +311,7 @@ class _HotelsListViewState extends State<HotelsListView> {
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/plan-trip'),
         ),
         actions: [
           IconButton(

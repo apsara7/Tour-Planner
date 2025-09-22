@@ -431,6 +431,19 @@ class ApiService {
 
   // Hotel trip methods
 
+  Future<Map<String, dynamic>> confirmTrip(String tripId, String userId) async {
+    try {
+      final data = {
+        'tripId': tripId,
+        'userId': userId,
+      };
+      final response = await post(ApiConstants.confirmTrip, data);
+      return response;
+    } catch (e) {
+      throw Exception('Failed to confirm trip: $e');
+    }
+  }
+
   dynamic _handleResponse(http.Response response) {
     // Try to parse the response body
     dynamic responseBody;

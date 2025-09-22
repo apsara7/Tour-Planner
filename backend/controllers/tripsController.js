@@ -3,6 +3,7 @@ const Place = require("../models/places");
 const Guide = require("../models/guides");
 const Hotel = require("../models/hotels");
 const Vehicle = require("../models/vehicle");
+const User = require("../models/userModel");
 
 // Helper function to recalculate trip budget
 const recalculateTripBudget = async (trip) => {
@@ -1063,6 +1064,226 @@ const updateVehicleInTrip = async (req, res) => {
   }
 };
 
+// ✅ Confirm trip and send notifications
+const confirmTrip = async (req, res) => {
+  try {
+    const { tripId } = req.body;
+    const userId = req.user?.id || req.body.userId;
+
+    if (!tripId) {
+      return res.status(400).json({ message: "Trip ID is required" });
+    }
+
+    // Find trip and verify ownership
+    const trip = await Trip.findOne({
+      _id: tripId,
+      userId,
+      isActive: true,
+    })
+      .populate("places.placeId")
+      .populate("guides.guideId");
+
+    if (!trip) {
+      return res
+        .status(404)
+        .json({ message: "Trip not found or access denied" });
+    }
+
+    // Update trip status to confirmed
+    trip.status = "confirmed";
+    await trip.save();
+
+    // Send email notifications to all relevant parties
+    const sendEmail = require("../utill/mails.js");
+
+    // Get user details for contact information
+    const User = require("../models/userModel.js");
+    const user = await User.findOne({ _id: userId });
+
+    // Send email to guides
+    for (const guideItem of trip.guides) {
+      const guide = await Guide.findById(guideItem.guideId);
+      if (guide && guide.contactDetails && guide.contactDetails.email) {
+        try {
+          const guideEmailContent = `
+            <h2>Trip Booking Confirmation</h2>
+            <p>Hello ${guide.guideName},</p>
+            <p>A user has booked your services for an upcoming trip.</p>
+            <h3>Trip Details:</h3>
+            <ul>
+              <li>Trip Name: ${trip.name}</li>
+              <li>Trip Duration: ${
+                trip.startDate && trip.endDate
+                  ? `${new Date(
+                      trip.startDate
+                    ).toLocaleDateString()} to ${new Date(
+                      trip.endDate
+                    ).toLocaleDateString()}`
+                  : "Dates not specified"
+              }</li>
+              <li>User: ${user?.firstName || ""} ${user?.lastName || ""}</li>
+              <li>User Email: ${user?.email || ""}</li>
+              <li>User Phone: ${user?.mobile || ""}</li>
+              <li>Booking Date: ${new Date().toLocaleDateString()}</li>
+              <li>Working Hours: ${
+                guideItem.workingHours?.start || "09:00"
+              } - ${guideItem.workingHours?.end || "18:00"}</li>
+              <li>Daily Cost: LKR ${guideItem.dailyCost || 0}</li>
+              <li>Total Trip Cost: LKR ${guideItem.totalTripCost || 0}</li>
+            </ul>
+            <p>Please contact the user soon to discuss the trip details.</p>
+            <p>Thank you for using our service!</p>
+          `;
+
+          await sendEmail(
+            guide.contactDetails.email,
+            "New Trip Booking - Guide Services Requested",
+            guideEmailContent
+          );
+        } catch (emailError) {
+          console.error("Error sending email to guide:", emailError);
+        }
+      }
+    }
+
+    // Send email to hotels
+    for (const hotelItem of trip.hotels) {
+      const hotel = await Hotel.findById(hotelItem.hotelId);
+      if (hotel && hotel.contactDetails && hotel.contactDetails.email) {
+        try {
+          // Find the selected package details
+          const selectedPackage = hotel.packages?.find(
+            (pkg) => pkg._id.toString() === hotelItem.packageId.toString()
+          );
+          const packageName = selectedPackage ? selectedPackage.name : "N/A";
+          const packageType = selectedPackage ? selectedPackage.type : "N/A";
+
+          const hotelEmailContent = `
+            <h2>Hotel Booking Confirmation</h2>
+            <p>Hello Hotel Team,</p>
+            <p>A user has booked a room at your hotel for an upcoming trip.</p>
+            <h3>Booking Details:</h3>
+            <ul>
+              <li>Hotel: ${hotel.hotelName}</li>
+              <li>Package Selected: ${packageName} (${packageType})</li>
+              <li>Trip Name: ${trip.name}</li>
+              <li>User: ${user?.firstName || ""} ${user?.lastName || ""}</li>
+              <li>User Email: ${user?.email || ""}</li>
+              <li>User Phone: ${user?.mobile || ""}</li>
+              <li>Check-in Date: ${
+                hotelItem.bookingDetails?.checkInDate
+                  ? new Date(
+                      hotelItem.bookingDetails.checkInDate
+                    ).toLocaleDateString()
+                  : "N/A"
+              }</li>
+              <li>Check-out Date: ${
+                hotelItem.bookingDetails?.checkOutDate
+                  ? new Date(
+                      hotelItem.bookingDetails.checkOutDate
+                    ).toLocaleDateString()
+                  : "N/A"
+              }</li>
+              <li>Booking Period: ${
+                hotelItem.bookingDetails?.checkInDate &&
+                hotelItem.bookingDetails?.checkOutDate
+                  ? `${new Date(
+                      hotelItem.bookingDetails.checkInDate
+                    ).toLocaleDateString()} to ${new Date(
+                      hotelItem.bookingDetails.checkOutDate
+                    ).toLocaleDateString()}`
+                  : "N/A"
+              }</li>
+              <li>Rooms Booked: ${
+                hotelItem.bookingDetails?.roomsBooked || 1
+              }</li>
+              <li>Guests per Room: ${
+                hotelItem.bookingDetails?.guestCount || 2
+              }</li>
+              <li>Total Price: LKR ${
+                hotelItem.bookingDetails?.totalPrice || 0
+              }</li>
+              <li>Booking Date: ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>Please contact the user soon to confirm the booking.</p>
+            <p>Thank you for using our service!</p>
+          `;
+
+          await sendEmail(
+            hotel.contactDetails.email,
+            "New Trip Booking - Hotel Reservation Requested",
+            hotelEmailContent
+          );
+        } catch (emailError) {
+          console.error("Error sending email to hotel:", emailError);
+        }
+      }
+    }
+
+    // Send email to vehicle owners
+    for (const vehicleItem of trip.vehicles) {
+      const vehicle = await Vehicle.findById(vehicleItem.vehicleId);
+      if (vehicle && vehicle.owner && vehicle.owner.email) {
+        try {
+          const vehicleEmailContent = `
+            <h2>Vehicle Booking Confirmation</h2>
+            <p>Hello ${vehicle.owner.name || "Vehicle Owner"},</p>
+            <p>A user has booked your vehicle for an upcoming trip.</p>
+            <h3>Booking Details:</h3>
+            <ul>
+              <li>Vehicle Type: ${vehicle.type}</li>
+              <li>Vehicle Model: ${vehicle.model || "N/A"}</li>
+              <li>Trip Name: ${trip.name}</li>
+              <li>Trip Duration: ${
+                trip.startDate && trip.endDate
+                  ? `${new Date(
+                      trip.startDate
+                    ).toLocaleDateString()} to ${new Date(
+                      trip.endDate
+                    ).toLocaleDateString()}`
+                  : "Dates not specified"
+              }</li>
+              <li>User: ${user?.firstName || ""} ${user?.lastName || ""}</li>
+              <li>User Email: ${user?.email || ""}</li>
+              <li>User Phone: ${user?.mobile || ""}</li>
+              <li>Travellers Count: ${vehicleItem.travellersCount || 1}</li>
+              <li>With Driver: ${vehicleItem.withDriver ? "Yes" : "No"}</li>
+              <li>Daily Cost: LKR ${vehicleItem.dailyCost || 0}</li>
+              <li>Total Trip Cost: LKR ${vehicleItem.totalTripCost || 0}</li>
+              <li>Booking Date: ${new Date().toLocaleDateString()}</li>
+            </ul>
+            <p>Please contact the user soon to discuss the rental details.</p>
+            <p>Thank you for using our service!</p>
+          `;
+
+          await sendEmail(
+            vehicle.owner.email,
+            "New Trip Booking - Vehicle Rental Requested",
+            vehicleEmailContent
+          );
+        } catch (emailError) {
+          console.error("Error sending email to vehicle owner:", emailError);
+        }
+      }
+    }
+
+    // Return updated trip
+    const updatedTrip = await Trip.findById(tripId)
+      .populate("places.placeId")
+      .populate("guides.guideId");
+
+    res.json({
+      status: "Success",
+      trip: updatedTrip,
+      message:
+        "Trip confirmed successfully. Notifications sent to all parties.",
+    });
+  } catch (err) {
+    console.error("Error confirming trip:", err);
+    res.status(500).json({ status: "Error", message: err.message });
+  }
+};
+
 module.exports = {
   createTrip,
   getUserTrips,
@@ -1081,4 +1302,5 @@ module.exports = {
   addVehicleToTrip,
   removeVehicleFromTrip,
   updateVehicleInTrip,
+  confirmTrip,
 };
